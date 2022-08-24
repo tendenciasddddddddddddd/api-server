@@ -45,6 +45,8 @@ require('./app/routes/articulos.routes')(app);
 require('./app/routes/personas.routes')(app);
 require('./app/routes/proveedors.routes')(app);
 require('./app/routes/ventas.routes')(app);
+require('./app/routes/ingreso.routes')(app);
+require('./app/routes/marca.routes')(app);
 // set port, listen for requests
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {

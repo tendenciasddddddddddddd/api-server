@@ -1,10 +1,12 @@
 const db = require("../models");
 const Op = require('../models').Sequelize.Op;
+const Ingresos = db.ingreso;
+const Detallemov = db.detallemov;
 const Ventas = db.ventas;
-const Detalles = db.detalles;
 const Personas = db.personas;
 const User = db.user;
 const Articulo = db.articulos;
+const Detalles = db.detalles;
 
 async function disminuirStock(idarticulo,cantidad){
   let {stock}=await Articulo.findOne({ 
@@ -28,7 +30,7 @@ async function aumentarStock(idarticulo,cantidad){
 
 async function list(req, res) {
   try {
-    const reg = await Ventas.findAll({ include: [{model: Personas},{model: User}] });
+    const reg = await Ingresos.findAll({ include: [{model: Personas},{model: User}] });
     res.json(reg);
   } catch (error) {
     res.status(500).json({
@@ -39,7 +41,7 @@ async function list(req, res) {
 async function add(req, res) {
     const { tipo_comprobante, serie_comprobante,num_comprobante,impuesto,total,personaId,userId } = req.body;
     try {
-        const newVentas = await Ventas.create(
+        const newIngresos = await Ingresos.create(
         {
           tipo_comprobante,
           serie_comprobante,
@@ -55,18 +57,18 @@ async function add(req, res) {
       ); 
         let detalles=req.body.detalles;
         detalles.map(async(x)=> {
-            const { nombre, cantidad,precio,descuento,articuloId } = x;
-            const ventaId = newVentas.id
-            await Detalles.create({
-                nombre, cantidad,precio,descuento,articuloId, ventaId 
+            const { nombre, cantidad,precio,articuloId } = x;
+            const ingresoId = newIngresos.id
+            await Detallemov.create({
+                nombre, cantidad,precio,articuloId, ingresoId 
             },
             {
-              fields: ["nombre", "cantidad","precio", "descuento","articuloId","ventaId"],
+              fields: ["nombre", "cantidad","precio", "ingresoId","articuloId"],
             })
-            disminuirStock(articuloId, cantidad);
+            aumentarStock(articuloId, cantidad);
         }); 
 
-      return res.json(newVentas);
+      return res.json(newIngresos);
     } catch (error) {
       res.status(500).json({
         message: error.message,
@@ -77,7 +79,7 @@ async function add(req, res) {
   async function query(req, res) {
     const  id = req.query.id;
     try {
-      const red = await Ventas.findOne({
+      const red = await Ingresos.findOne({
         where: {
           id,
         },
@@ -92,9 +94,9 @@ async function add(req, res) {
   async function queryDetalles(req, res) {
     const  id = req.query.id;
     try {
-      const red = await Detalles.findAll({
+      const red = await Detallemov.findAll({
         where: {
-            ventaId: id
+          ingresoId: id
         },
       });
       res.json(red);
@@ -107,7 +109,7 @@ async function add(req, res) {
 
   async function grafico12Meses(req, res) {
     try {
-      const red = await Ventas.findAll();
+      const red = await Ingresos.findAll();
       res.json(red);
     } catch (error) {
         console.log(error)
@@ -119,7 +121,7 @@ async function add(req, res) {
  const update = async (req, res) => {
     try {
       const id = req.body.id;
-      const reg = await Ventas.update(
+      const reg = await Ingresos.update(
         { nombre: req.body.nombre, descripcion : req.body.descripcion },
         { where: { id: id } }
       );
@@ -133,7 +135,7 @@ async function add(req, res) {
   const activate = async (req, res) => {
     try {
       const id = req.body.id;
-      const reg = await Ventas.update(
+      const reg = await Ingresos.update(
         { estado:true },
         { where: { id: id } }
       );
@@ -146,7 +148,7 @@ async function add(req, res) {
   const deactivate = async (req, res) => {
     try {
       const id = req.body.id;
-      const reg = await Ventas.update(
+      const reg = await Ingresos.update(
         { estado:false },
         { where: { id: id } }
       );
@@ -160,7 +162,7 @@ async function add(req, res) {
     const { id } = req.params;
     try {
 
-      await Ventas.destroy({
+      await Ingresos.destroy({
         where: {
           id,
         },
@@ -174,9 +176,41 @@ async function add(req, res) {
   async function consultaFechas(req, res) {
     let start= req.query.start;
     let end= req.query.end;
+    try {
+      const reg = await Ingresos.findAll({
+        where: {
+            createdAt:{
+                [Op.between]: [start, end],  
+            }
+        },
+        include: [ {model: Detallemov}]
+      });
+
+      const venta = await Ventas.findAll({
+        where: {
+            createdAt:{
+                [Op.between]: [start, end],  
+            }
+        },
+        include: [{model: Detalles}]
+      });
+
+      res.json({
+        ingresos: reg,
+        ventas: venta
+      });
+    } catch (error) {
+        console.log(error);
+      res.status(500).json({ message: error.message, });
+    }
+  }
+
+  async function reporte(req, res) {
+    let start= req.query.start;
+    let end= req.query.end;
     console.log(start, end);
     try {
-      const red = await Ventas.findAll({
+      const red = await Ingresos.findAll({
         where: {
             createdAt:{
                 [Op.between]: [start, end],  
@@ -193,5 +227,5 @@ async function add(req, res) {
     }
   }
 
-module.exports = {list, add, query, update, activate, deactivate, remove,queryDetalles, grafico12Meses, consultaFechas};
+module.exports = {list, add, query, update, activate, deactivate, remove,queryDetalles, grafico12Meses, consultaFechas, reporte};
 

@@ -18,4 +18,4 @@ module.exports = function(app) {
   app.put("/api/venta/activate", controller.activate);
   app.put("/api/venta/deactivate", controller.deactivate);
   app.delete("/api/venta/remove/:id", controller.remove);
-};
+};//

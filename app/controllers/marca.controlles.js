@@ -1,15 +1,11 @@
 const db = require("../models");
-const config = require("../config/auth.config");
-const User = db.user;
-const Role = db.role;
-const Op = db.Sequelize.Op;
-var jwt = require("jsonwebtoken");
-var bcrypt = require("bcryptjs");
+const Marca = db.marca;
+const Articulos = db.articulos;
 
 async function list(req, res) {
   try {
-    const user = await User.findAll();
-    res.json(user);
+    const reg = await Marca.findAll();
+    res.json(reg);
   } catch (error) {
     res.status(500).json({
       message: error.message,
@@ -17,24 +13,18 @@ async function list(req, res) {
   }
 }
 async function add(req, res) {
-    const { username, email, nombre, telefono, direccion, num_documento, password } = req.body;
+    const { nombre, descripcion } = req.body;
     try {
-      const newUser = await User.create(
+      let newMarca = await Marca.create(
         {
-          username:req.body.num_documento,
-          email,
           nombre,
-          telefono,
-          direccion,
-          num_documento,
-          password: bcrypt.hashSync(req.body.password, 8)
+          descripcion,
         },
         {
-          fields: ["username", "email","nombre", "telefono","direccion", "num_documento", "password"],
+          fields: ["nombre", "descripcion"],
         }
       );
-
-      return res.json(newUser);
+      return res.json(newMarca);
     } catch (error) {
       res.status(500).json({
         message: error.message,
@@ -45,7 +35,7 @@ async function add(req, res) {
   async function query(req, res) {
     const { id } = req.query._id;
     try {
-      const project = await User.findOne({
+      const project = await Marca.findOne({
         where: {
           id,
         },
@@ -61,7 +51,7 @@ async function add(req, res) {
  const update = async (req, res) => {
     try {
       const id = req.body.id;
-      const reg = await User.update(
+      const reg = await Marca.update(
         { nombre: req.body.nombre, descripcion : req.body.descripcion },
         { where: { id: id } }
       );
@@ -75,7 +65,7 @@ async function add(req, res) {
   const activate = async (req, res) => {
     try {
       const id = req.body.id;
-      const reg = await User.update(
+      const reg = await Marca.update(
         { estado:true },
         { where: { id: id } }
       );
@@ -88,7 +78,7 @@ async function add(req, res) {
   const deactivate = async (req, res) => {
     try {
       const id = req.body.id;
-      const reg = await User.update(
+      const reg = await Marca.update(
         { estado:false },
         { where: { id: id } }
       );
@@ -101,7 +91,12 @@ async function add(req, res) {
  async function remove(req, res) {
     const { id } = req.params;
     try {
-      await User.destroy({
+        await Articulos.destroy({
+            where: {
+                categoriumId: id,
+            },
+          });
+      await Marca.destroy({
         where: {
           id,
         },

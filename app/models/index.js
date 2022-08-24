@@ -27,6 +27,10 @@ db.personas = require("./personas.model")(sequelize, Sequelize);
 db.proveedors = require("./proveedors.model.js")(sequelize, Sequelize);
 db.ventas = require("./ventas.model.js")(sequelize, Sequelize);
 db.detalles = require("./detalles.model.js")(sequelize, Sequelize);
+db.marca = require("./marca.model.js")(sequelize, Sequelize);
+
+db.ingreso = require("./ingreso.model")(sequelize, Sequelize);
+db.detallemov = require("./detallemov.model")(sequelize, Sequelize);
 
 //-----------Relacion de ROLES Y USUARIOS MUCHOS A MUCHOS------------------------
 db.role.belongsToMany(db.user, {
@@ -46,6 +50,13 @@ db.categoria.hasMany(db.articulos, {
   sourceKey: "id",
 });
 db.articulos.belongsTo(db.categoria, { foreinkey: "categId", targetId: "id" });
+
+//-----------Relacion de MARCAS Y ARTICULOS UNO A MUCHOS------------------------
+db.marca.hasMany(db.articulos, {
+  foreinkey: "marcaId",
+  sourceKey: "id",
+});
+db.articulos.belongsTo(db.marca, { foreinkey: "marcaId", targetId: "id" });
 
 //-----------Relacion de PERSONAS Y PROVEEDORS UNO A MUCHOS------------------------
 db.personas.hasMany(db.proveedors, {
@@ -80,6 +91,31 @@ db.articulos.hasMany(db.detalles, {
 });
 db.detalles.belongsTo(db.articulos, { foreinkey: "articulId", targetId: "id" });
 
+//-----------Relacion de  INHGRESOS INVENTARIOS PERSONAS PROVEEDORS UNO A MUCHOS------------------------
+db.personas.hasMany(db.ingreso, {
+  foreinkey: "clientId",
+  sourceKey: "id",
+});
+db.ingreso.belongsTo(db.personas, { foreinkey: "clientId", targetId: "id" });
+
+db.user.hasMany(db.ingreso, {
+  foreinkey: "userId",
+  sourceKey: "id",
+});
+db.ingreso.belongsTo(db.user, { foreinkey: "userId", targetId: "id" });
+
+//-----------Relacion de INGRESOS INVENTARIOS Y DETALLES UNO A MUCHOS------------------------
+db.ingreso.hasMany(db.detallemov, {
+  foreinkey: "ingresoId",
+  sourceKey: "id",
+});
+db.detallemov.belongsTo(db.ingreso, { foreinkey: "ingresoId", targetId: "id" });
+
+db.articulos.hasMany(db.detallemov, {
+  foreinkey: "articulId",
+  sourceKey: "id",
+});
+db.detallemov.belongsTo(db.articulos, { foreinkey: "articulId", targetId: "id" });
 
 db.ROLES = ["Vendedor", "Administrador", "Almacenero"];
 module.exports = db;

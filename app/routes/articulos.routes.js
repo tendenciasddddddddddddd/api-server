@@ -10,6 +10,7 @@ module.exports = function(app) {
   });
   app.get("/api/articulo/list", controller.list);
   app.get("/api/articulo/queryCodigo", controller.queryCodigo);
+  app.get("/api/articulo/listName", controller.listName);
   app.post("/api/articulo/add", controller.add);
   app.get("/api/articulo/query", controller.query);
   app.put("/api/articulo/update", controller.update);

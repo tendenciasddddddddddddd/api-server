@@ -1,21 +1,23 @@
-
+const Op = require('../models').Sequelize.Op;
 const db = require("../models");
 const Articulos = db.articulos;
 const Categorias = db.categoria;
+const Marca = db.marca;
 
 
 async function list(req, res) {
   try {
-    const reg = await Articulos.findAll({ include: Categorias });
+    const reg = await Articulos.findAll({ include: [{model:Categorias}, {model:Marca}]});
     res.json(reg);
   } catch (error) {
+    console.log(error);
     res.status(500).json({
       message: error.message,
     });
   }
 }
 async function add(req, res) {
-    const { nombre, descripcion, codigo, stock, precio_venta, categoriumId } = req.body;
+    const { nombre, descripcion,  codigo, stock, precio_venta, categoriumId, marcaId } = req.body;
     try {
       let reg = await Articulos.create(
         {
@@ -24,10 +26,11 @@ async function add(req, res) {
           codigo,
           stock,
           precio_venta,
-          categoriumId
+          categoriumId,
+          marcaId
         },
         {
-          fields: ["nombre", "descripcion","codigo", "stock","precio_venta", "categoriumId"],
+          fields: ["nombre", "descripcion","codigo", "stock","precio_venta", "categoriumId", "marcaId"],
         }
       );
       return res.json(reg);
@@ -69,6 +72,24 @@ async function add(req, res) {
     }
   }
 
+  async function listName(req, res) {
+    try {
+      var search = req.query.nombre
+      const noPuncuationSearch = search?.replace(/[^A-Za-z0-9]+/g,'[^A-Za-z0-9]+');
+      const reg = await Articulos.findAll({ 
+        where: {
+          nombre: {
+            [Op.iRegexp]: noPuncuationSearch,
+          },
+        }, include:  [{model:Categorias}, {model:Marca}] });
+      res.json(reg);
+    } catch (error) {
+      res.status(500).json({
+        message: error.message,
+      });
+    }
+  }
+  
  const update = async (req, res) => {
     try {
       const id = req.body.id;
@@ -131,5 +152,5 @@ async function add(req, res) {
     }
   }
 
-module.exports = {list, add, query, update, activate, deactivate, remove,queryCodigo};
+module.exports = {list, add, query, update, activate, deactivate, remove,queryCodigo, listName};
 
