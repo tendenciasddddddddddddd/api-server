@@ -22,6 +22,7 @@ db.sequelize = sequelize;
 db.user = require("./user.model.js")(sequelize, Sequelize);
 db.role = require("./role.model.js")(sequelize, Sequelize);
 db.categoria = require("./categoria.model.js")(sequelize, Sequelize);
+db.ubicacion = require("./ubicacion.model")(sequelize, Sequelize);
 db.articulos = require("./articulos.model.js")(sequelize, Sequelize);
 db.personas = require("./personas.model")(sequelize, Sequelize);
 db.proveedors = require("./proveedors.model.js")(sequelize, Sequelize);
@@ -50,6 +51,13 @@ db.categoria.hasMany(db.articulos, {
   sourceKey: "id",
 });
 db.articulos.belongsTo(db.categoria, { foreinkey: "categId", targetId: "id" });
+
+//-----------Relacion de UBICACION Y ARTICULOS UNO A MUCHOS------------------------
+db.ubicacion.hasMany(db.articulos, {
+  foreinkey: "ubicId",
+  sourceKey: "id",
+});
+db.articulos.belongsTo(db.ubicacion, { foreinkey: "ubicId", targetId: "id" });
 
 //-----------Relacion de MARCAS Y ARTICULOS UNO A MUCHOS------------------------
 db.marca.hasMany(db.articulos, {

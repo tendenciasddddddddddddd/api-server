@@ -3,11 +3,12 @@ const db = require("../models");
 const Articulos = db.articulos;
 const Categorias = db.categoria;
 const Marca = db.marca;
+const Ubicacion = db.ubicacion;
 
 
 async function list(req, res) {
   try {
-    const reg = await Articulos.findAll({ include: [{model:Categorias}, {model:Marca}]});
+    const reg = await Articulos.findAll({ include: [{model:Categorias}, {model:Marca}, {model:Ubicacion}]});
     res.json(reg);
   } catch (error) {
     console.log(error);
@@ -17,7 +18,7 @@ async function list(req, res) {
   }
 }
 async function add(req, res) {
-    const { nombre, descripcion,  codigo, stock, precio_venta, categoriumId, marcaId } = req.body;
+    const { nombre, descripcion,  codigo, stock, precio_venta, categoriumId, marcaId, ubicacionId } = req.body;
     try {
       let reg = await Articulos.create(
         {
@@ -27,10 +28,11 @@ async function add(req, res) {
           stock,
           precio_venta,
           categoriumId,
-          marcaId
+          marcaId,
+          ubicacionId,
         },
         {
-          fields: ["nombre", "descripcion","codigo", "stock","precio_venta", "categoriumId", "marcaId"],
+          fields: ["nombre", "descripcion","codigo", "stock","precio_venta", "categoriumId", "marcaId", "ubicacionId"],
         }
       );
       return res.json(reg);
@@ -101,6 +103,7 @@ async function add(req, res) {
             stock : req.body.stock,
             precio_venta : req.body.precio_venta,
             categoriumId : req.body.categoriumId,
+            ubicacionId : req.body.ubicacionId
         },
         { where: { id: id } }
       );

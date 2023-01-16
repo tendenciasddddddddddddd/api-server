@@ -159,7 +159,11 @@ async function add(req, res) {
  async function remove(req, res) {
     const { id } = req.params;
     try {
-
+      await Detalles.destroy({
+        where: {
+            ventaId: id,
+        },
+      });
       await Ventas.destroy({
         where: {
           id,
