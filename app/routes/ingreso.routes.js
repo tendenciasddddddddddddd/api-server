@@ -9,7 +9,7 @@ module.exports = function(app) {
     next();
   });
   app.get("/api/ingreso/list", controller.list);
-  app.post("/api/ingreso/add", controller.add);
+  app.post("/api/ingreso/add",authJwt.verifyToken, controller.add);
   app.get("/api/ingreso/query", controller.query);
   app.get("/api/ingreso/reporte", controller.reporte);
   app.get("/api/ingreso/queryDetalles", controller.queryDetalles);
@@ -18,5 +18,5 @@ module.exports = function(app) {
   app.put("/api/ingreso/update", controller.update);
   app.put("/api/ingreso/activate", controller.activate);
   app.put("/api/ingreso/deactivate", controller.deactivate);
-  app.delete("/api/ingreso/remove/:id", controller.remove);
+  app.delete("/api/ingreso/remove/:id",authJwt.verifyToken, controller.remove);
 };

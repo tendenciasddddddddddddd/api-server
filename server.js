@@ -14,27 +14,27 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 const db = require("./app/models");
 //db.sequelize.sync();
-//  const Role = db.role;
-//  db.sequelize.sync({force: true}).then(() => {
-//    console.log('Drop and Resync Db');
-//    initial();
-//  });
-//  function initial() {
-//    Role.create({
-//      id: 1,
-//      name: "Vendedor"
-//    });
+  // const Role = db.role;
+  // db.sequelize.sync({force: true}).then(() => {
+  //   console.log('Drop and Resync Db');
+  //   initial();
+  // });
+  // function initial() {
+  //   Role.create({
+  //     id: 1,
+  //     name: "Vendedor"
+  //   });
  
-//    Role.create({
-//      id: 2,
-//      name: "Administrador"
-//    });
+  //   Role.create({
+  //     id: 2,
+  //     name: "Administrador"
+  //   });
  
-//    Role.create({
-//      id: 3,
-//      name: "Almacenero"
-//    });
-//  }
+  //   Role.create({
+  //     id: 3,
+  //     name: "Almacenero"
+  //   });
+  // }
 app.get("/", (req, res) => {
   res.json({ message: "Welcome to bezkoder application." });
 });
@@ -48,6 +48,7 @@ require('./app/routes/ventas.routes')(app);
 require('./app/routes/ingreso.routes')(app);
 require('./app/routes/marca.routes')(app);
 require('./app/routes/ubicacion.routes')(app);
+require('./app/routes/auditoria.routes')(app);
 // set port, listen for requests
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {

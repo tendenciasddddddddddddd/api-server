@@ -2,9 +2,23 @@ const db = require("../models");
 const config = require("../config/auth.config");
 const User = db.user;
 const Role = db.role;
+const Auditoria = db.auditoria;
 const Op = db.Sequelize.Op;
 var jwt = require("jsonwebtoken");
 var bcrypt = require("bcryptjs");
+
+const nodemailer = require('nodemailer');
+
+const transporter = nodemailer.createTransport({
+  host: "smtp.gmail.com",
+  port: 465,
+  secure: true, // true for 465, false for other ports
+  auth: {
+    user: 'inventariotesis@gmail.com', // generated ethereal user
+    pass: 'kphsvsxryhfrlwvw', // generated ethereal password
+  },
+});
+
 exports.signup = (req, res) => {
   // Save User to Database
   User.create({
@@ -60,13 +74,29 @@ exports.signin = (req, res) => {
           message: "Invalid Password!"
         });
       }
-    
+      //---------------------PUENTE AUDITORIA ------------------------------
+      var datetime = new Date().toISOString();
+      Auditoria.create(
+        {
+          usuario: user.nombre,
+          tipo: 'Ingreso al sistema',
+          fecha: datetime.toString(),
+          documento: user.id,
+        },
+        {
+          fields: ["usuario", "tipo","fecha", "documento"],
+        }
+      )
+      .then(() => {
+        console.log('Connection has been established successfully.');
+      })
+      //---------------------SALIDA AUDITORIA ------------------------------
       var authorities = [];
       user.getRoles().then(roles => {
         for (let i = 0; i < roles.length; i++) {
           authorities.push(roles[i].name);
         }
-        var tokenReturn = jwt.sign({ id: user.id, rol: authorities[0], email: user.email }, config.secret, {
+        var tokenReturn = jwt.sign({ id: user.id, rol: authorities[0], email: user.nombre }, config.secret, {
           expiresIn: 86400 // 24 hours
         });
         console.log("authorities: ", authorities[0]);
@@ -79,3 +109,60 @@ exports.signin = (req, res) => {
       res.status(500).send({ message: err.message });
     });
 };
+
+exports.contrasenia = async (req, res) => {
+  try {
+   const user = await User.findOne({
+     where: { 
+       email: req.body.email
+     },
+   });
+   if (!user) {
+     return res.status(404).send({ message: "User Not found." });
+   }
+   let code = generateRandomString()
+   sendMail(req.body.email, code)
+   let contra = bcrypt.hashSync(code, 8)
+   const reg = await User.update(
+     { password :  contra},
+     { where: { id: user.id } }
+   );
+   res.json("ok");
+  } catch (error) {
+   console.log(error)
+   res.status(500).json({
+    
+     message: error.message,
+   });
+  }
+ };
+ 
+ exports.rescontrasenia = async (req, res) => {
+   try {
+    const user = await User.findOne({
+      where: { 
+        email: req.body.email
+      },
+    });
+    if (!user) {
+      return res.status(404).send({ message: "User Not found." });
+    }
+    let contra = bcrypt.hashSync(req.body.password, 8)
+    const reg = await User.update(
+      { password :  contra},
+      { where: { id: user.id } }
+    );
+    res.json("ok");
+   } catch (error) {
+    console.log(error)
+    res.status(500).json({
+     
+      message: error.message,
+    });
+   }
+  };
+ 
+ const generateRandomString = (num) => {
+   let result1 = Math.random().toString(36).substring(0, num);
+   return result1;
+ }

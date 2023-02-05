@@ -9,7 +9,7 @@ module.exports = function(app) {
     next();
   });
   app.get("/api/venta/list", controller.list);
-  app.post("/api/venta/add", controller.add);
+  app.post("/api/venta/add",authJwt.verifyToken, controller.add);
   app.get("/api/venta/query", controller.query);
   app.get("/api/venta/queryDetalles", controller.queryDetalles);
   app.get("/api/venta/grafico12Meses", controller.grafico12Meses);
@@ -17,5 +17,5 @@ module.exports = function(app) {
   app.put("/api/venta/update", controller.update);
   app.put("/api/venta/activate", controller.activate);
   app.put("/api/venta/deactivate", controller.deactivate);
-  app.delete("/api/venta/remove/:id", controller.remove);
+  app.delete("/api/venta/remove/:id",authJwt.verifyToken, controller.remove);
 };//

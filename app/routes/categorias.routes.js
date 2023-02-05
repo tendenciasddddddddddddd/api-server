@@ -9,10 +9,10 @@ module.exports = function(app) {
     next();
   });
   app.get("/api/categoria/list", controller.list);
-  app.post("/api/categoria/add", controller.add);
+  app.post("/api/categoria/add",authJwt.verifyToken , controller.add);
   app.get("/api/categoria/query", controller.query);
   app.put("/api/categoria/update", controller.update);
   app.put("/api/categoria/activate", controller.activate);
   app.put("/api/categoria/deactivate", controller.deactivate);
-  app.delete("/api/categoria/remove/:id", controller.remove);
+  app.delete("/api/categoria/remove/:id",authJwt.verifyToken , controller.remove);
 };

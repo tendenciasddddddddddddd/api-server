@@ -159,6 +159,13 @@ async function add(req, res) {
  async function remove(req, res) {
     const { id } = req.params;
     try {
+      const ress = await Detalles.findAll({ where: { ventaId: id, },});
+      ress.forEach( 
+        (x) => { 
+          aumentarStock(x.articuloId, x.cantidad);
+        }
+      );
+       
       await Detalles.destroy({
         where: {
             ventaId: id,
@@ -168,7 +175,9 @@ async function add(req, res) {
         where: {
           id,
         },
+       
       });
+     
       return res.sendStatus(204);
     } catch (error) {
         console.log(error);
@@ -178,7 +187,6 @@ async function add(req, res) {
   async function consultaFechas(req, res) {
     let start= req.query.start;
     let end= req.query.end;
-    console.log(start, end);
     try {
       const red = await Ventas.findAll({
         where: {
@@ -190,7 +198,6 @@ async function add(req, res) {
       });
       res.json(red);
     } catch (error) {
-        console.log(error);
       res.status(500).json({
         message: error.message,
       });

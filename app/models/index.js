@@ -29,6 +29,7 @@ db.proveedors = require("./proveedors.model.js")(sequelize, Sequelize);
 db.ventas = require("./ventas.model.js")(sequelize, Sequelize);
 db.detalles = require("./detalles.model.js")(sequelize, Sequelize);
 db.marca = require("./marca.model.js")(sequelize, Sequelize);
+db.auditoria = require("./auditoria.model.js")(sequelize, Sequelize);
 
 db.ingreso = require("./ingreso.model")(sequelize, Sequelize);
 db.detallemov = require("./detallemov.model")(sequelize, Sequelize);

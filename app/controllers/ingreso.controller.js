@@ -8,6 +8,7 @@ const User = db.user;
 const Articulo = db.articulos;
 const Detalles = db.detalles;
 
+
 async function disminuirStock(idarticulo,cantidad){
   let {stock}=await Articulo.findOne({ 
     where: {
@@ -67,9 +68,9 @@ async function add(req, res) {
             })
             aumentarStock(articuloId, cantidad);
         }); 
-
       return res.json(newIngresos);
     } catch (error) {
+      console.log(error)
       res.status(500).json({
         message: error.message,
       });
@@ -125,6 +126,8 @@ async function add(req, res) {
         { nombre: req.body.nombre, descripcion : req.body.descripcion },
         { where: { id: id } }
       );
+      let accion = 'Editor compra'
+      await auditorias(req.body, accion)
       res.json(reg);
     } catch (error) {
         console.log(error);
@@ -161,7 +164,17 @@ async function add(req, res) {
  async function remove(req, res) {
     const { id } = req.params;
     try {
-
+      const ress = await Detallemov.findAll({ where: { ingresoId: id, },});
+      ress.forEach( 
+        (x) => { 
+          disminuirStock(x.articuloId, x.cantidad);
+        }
+      );
+      await Detallemov.destroy({
+        where: {
+            ingresoId: id,
+        },
+      });
       await Ingresos.destroy({
         where: {
           id,
@@ -174,10 +187,31 @@ async function add(req, res) {
     }
   }
   async function consultaFechas(req, res) {
+    const initialData = '2022-01-01';
     let start= req.query.start;
     let end= req.query.end;
+   
     try {
-      const reg = await Ingresos.findAll({
+      //---------------RANGOS DE FECHAS INVENTARIO INICIAL
+      const ingresoInicial = await Ingresos.findAll({
+        where: {
+            createdAt:{
+                [Op.between]: [initialData, start],  
+            }
+        },
+        include: [ {model: Detallemov}]
+      });
+      const ventaInicial = await Ventas.findAll({
+        where: {
+            createdAt:{
+                [Op.between]: [initialData, start],  
+            }
+        },
+        include: [{model: Detalles}]
+      });
+
+       //-------------RANGOS DE FECHAS A CONSULTAR
+      const compra = await Ingresos.findAll({
         where: {
             createdAt:{
                 [Op.between]: [start, end],  
@@ -196,7 +230,9 @@ async function add(req, res) {
       });
 
       res.json({
-        ingresos: reg,
+        ventaInicial : ventaInicial,
+        ingresoInicial : ingresoInicial,
+        ingresos: compra,
         ventas: venta
       });
     } catch (error) {
